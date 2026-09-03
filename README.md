@@ -234,7 +234,7 @@ poor way to take it.
 <details>
 <summary><b>How this was built</b></summary>
 
-An agent pipeline wrote most of this code and the commit trailers say so.
+An agent pipeline wrote most of this code.
 
 The checks in this repository exist because of specific things that went wrong
 while writing it, not as decoration. Two worth naming, both caught by the code
