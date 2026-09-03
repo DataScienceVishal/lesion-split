@@ -12,12 +12,9 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      # Constraint 4. The suite must pass with no credentials present, and
-      # strict mode turns an unrecorded call into a failure rather than a
-      # silently synthesised reply.
-      LLM_PROVIDER: stub
-      LLM_STUB_STRICT: "1"
+    # No model-call configuration, because this project makes none. There is no
+    # adapter and no provider to stub. `--disable-socket` below is what turns
+    # that from a claim into something the run enforces.
     steps:
       - uses: actions/checkout@v4
 
