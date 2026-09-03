@@ -1,0 +1,33 @@
+{
+  "images": 10015,
+  "lesions": 7470,
+  "repeated_lesions": 1956,
+  "images_in_repeated_lesions": 4501,
+  "most_photographs_of_one_lesion": 6,
+  "class_counts": {
+    "nv": 6705,
+    "mel": 1113,
+    "bkl": 1099,
+    "bcc": 514,
+    "akiec": 327,
+    "vasc": 142,
+    "df": 115
+  },
+  "seeds": 20,
+  "by_split": {
+    "by_image": {
+      "mean_leaked_fraction": 0.38334997503744384,
+      "min_leaked_fraction": 0.3654518222666001,
+      "max_leaked_fraction": 0.399900149775337,
+      "mean_train_images": 8012.0,
+      "mean_test_images": 2003.0
+    },
+    "by_lesion": {
+      "mean_leaked_fraction": 0.0,
+      "min_leaked_fraction": 0.0,
+      "max_leaked_fraction": 0.0,
+      "mean_train_images": 8010.6,
+      "mean_test_images": 2004.4
+    }
+  }
+}
