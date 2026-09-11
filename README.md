@@ -221,6 +221,9 @@ Nothing downloaded is committed. Non-commercial terms and a public repository do
 not mix, so the images land in a gitignored directory on the reader's machine
 under whatever terms they accepted.
 
+The code in this repository is MIT licensed and the dataset is not. [NOTICE.md](NOTICE.md)
+says which licence covers what.
+
 Kaggle hosts this dataset in at least a dozen forms: balanced, augmented, hair
 removed, resized to 28 by 28. Training on a pre-augmented copy leaks by
 construction, because derived images of one original sit on both sides of any
