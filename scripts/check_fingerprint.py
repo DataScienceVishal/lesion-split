@@ -109,7 +109,7 @@ def find_banned_md(start: Path) -> Path:
     earlier version checked `start / "BANNED.md"` once and then walked up looking
     only for `_factory/BANNED.md`. Called from a repo's `tests/` directory that
     meant the repo's own root-level copy was skipped, and on the author's machine
-    the walk found the factory's copy one directory above the repo instead. Tests
+    the walk found a copy one directory above the repo instead. Tests
     passed there and failed in every clone, which is the exact shape of bug the
     adversary agent exists to catch.
     """

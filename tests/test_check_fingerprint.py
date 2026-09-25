@@ -15,7 +15,7 @@ import pytest
 
 
 def _script_dir() -> Path:
-    """Sibling in the factory, ../scripts once init_project.sh has split them."""
+    """Sibling before the layout is split, ../scripts afterwards."""
     here = Path(__file__).resolve().parent
     for candidate in (here, here.parent / "scripts"):
         if (candidate / "check_fingerprint.py").is_file():
@@ -146,7 +146,7 @@ def test_finds_a_repo_local_banned_md_from_a_subdirectory(tmp_path):
 
     `find_banned_md` used to check `start / "BANNED.md"` once and then walk up
     for `_factory/BANNED.md` only. Called from `tests/`, it skipped the repo's
-    own root copy and kept climbing until it found the factory's copy outside
+    own root copy and kept climbing until it found a copy outside
     the repo. Green locally, 18 errors in every clone.
     """
     repo = tmp_path / "someproject"
@@ -207,7 +207,7 @@ def test_the_word_list_is_skipped_under_its_shipped_name_too(tmp_path):
 
 
 def test_the_shipped_word_list_is_found_from_a_subdirectory(tmp_path):
-    """init_project.sh writes scripts/style-words.md, so discovery has to reach it."""
+    """Setup writes scripts/style-words.md, so discovery has to reach it."""
     repo = tmp_path / "someproject"
     (repo / "scripts").mkdir(parents=True)
     (repo / "tests").mkdir()
