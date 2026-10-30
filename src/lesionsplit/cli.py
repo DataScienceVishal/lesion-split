@@ -53,7 +53,7 @@ def _leakage(args: argparse.Namespace) -> int:
     print(f"HAM10000, Dataverse {fetch.VERSION}")
     print(f"  {len(frame):,} images over {frame.lesion_id.nunique():,} lesions")
     print(f"  {(counts > 1).sum():,} lesions appear more than once, up to {counts.max()} times")
-    print(f"  {counts[counts > 1].sum():,} images are a repeat look at a lesion already present")
+    print(f"  {counts[counts > 1].sum():,} images belong to those lesions")
     print()
     print(f"  {args.seeds} seeds, {int(splits.TEST_FRACTION * 100)}% held out")
     print(f"    {'split':<11}{'train':>7}{'test':>7}{'leaked':>9}{'leaked':>9}")

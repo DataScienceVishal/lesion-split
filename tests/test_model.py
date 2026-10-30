@@ -31,10 +31,9 @@ def test_the_network_maps_a_batch_of_images_to_one_score_per_class():
 def test_the_first_block_strides_so_the_experiment_fits_in_ten_minutes():
     """Regression on a performance decision that is easy to undo by accident.
 
-    Without the stride, one training step measured 456 ms against 155 ms with
-    it, and the six-run experiment went from 34 minutes to 12. Somebody
-    simplifying the loop back to a uniform stride would not see a test fail
-    unless one asserts on it.
+    Without the stride every convolution computes four times as many outputs.
+    Somebody simplifying the loop back to a uniform stride would not see a test
+    fail unless one asserts on it.
     """
     first = models.SmallCNN().features[0]
     assert first.stride == (2, 2)

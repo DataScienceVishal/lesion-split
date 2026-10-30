@@ -1,9 +1,13 @@
 """README tables, rendered from the committed artifacts.
 
-Every figure in the README lives between a pair of HTML comments and is written
-by one of the generators below. `report --check` re-renders and compares, so a
-number that has been edited by hand, or one that has drifted because the
-experiment was rerun and the prose was not, fails rather than sits there.
+Every table in the README, and the runtime block, lives between a pair of HTML
+comments and is written by one of the generators below. `report --check`
+re-renders and compares, and `tests/test_readme.py` makes the same comparison on
+every CI run, so a number in one of those blocks that has been edited by hand,
+or one that has drifted because the experiment was rerun and the README was not,
+fails rather than sits there. The batch size in the runtime block is typed by the
+generator, because no artifact records it, so a rerun at another batch size
+would not show.
 
 A marker with no generator and a generator with no marker are both errors. That
 matters more than it sounds: checking only one direction lets a block quietly
@@ -53,7 +57,7 @@ def corpus(experiment: dict, leakage: dict) -> list[str]:
         f"| distinct lesions | {leakage['lesions']:,} |",
         f"| lesions photographed more than once | {leakage['repeated_lesions']:,} "
         f"({100 * leakage['repeated_lesions'] / leakage['lesions']:.1f}%) |",
-        f"| images that are a repeat of one already present | "
+        f"| images of lesions photographed more than once | "
         f"{leakage['images_in_repeated_lesions']:,} "
         f"({100 * leakage['images_in_repeated_lesions'] / leakage['images']:.1f}%) |",
         f"| most photographs of one lesion | {leakage['most_photographs_of_one_lesion']} |",
@@ -71,7 +75,8 @@ def leakage_table(experiment: dict, leakage: dict) -> list[str]:
             f"({100 * part['min_leaked_fraction']:.1f} to "
             f"{100 * part['max_leaked_fraction']:.1f}) |"
         )
-    rows.append(f"\nOver {leakage['seeds']} seeds, 20 percent held out.")
+    held_out = leakage["by_split"]["by_image"]["mean_test_images"] / leakage["images"]
+    rows.append(f"\nOver {leakage['seeds']} seeds, {100 * held_out:.0f} percent held out.")
     return rows
 
 
@@ -88,7 +93,9 @@ def accuracy_table(experiment: dict, leakage: dict) -> list[str]:
     floor = np.mean([r["baselines"]["majority_class"]["accuracy"] for r in runs])
     chance = np.mean([r["baselines"]["stratified_chance"]["balanced_accuracy"] for r in runs])
     rows += [
-        f"| always answer `nv` | {floor:.3f} | {1 / 7:.3f} | 0.114 |",
+        f"| always answer `nv` | {floor:.3f} | "
+        f"{np.mean([r['baselines']['majority_class']['balanced_accuracy'] for r in runs]):.3f} | "
+        f"{np.mean([r['baselines']['majority_class']['macro_f1'] for r in runs]):.3f} |",
         f"| guess in proportion | "
         f"{np.mean([r['baselines']['stratified_chance']['accuracy'] for r in runs]):.3f} | "
         f"{chance:.3f} | "

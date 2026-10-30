@@ -36,11 +36,11 @@ class SmallCNN(nn.Module):
         channels = 3
         for depth in range(4):
             out = width * (2**depth)
-            # The first block strides. Measured on this laptop, running block one
-            # at the full 64 by 64 costs 456 ms per step against 155 ms with the
-            # stride, and the six-run experiment goes from 34 minutes to 12. The
-            # input stays at 64 so the decoder still sees that detail; only the
-            # first convolution skips half of it.
+            # The first block strides 2, for training time on a CPU. Every feature
+            # map from that convolution on has half the side it would otherwise,
+            # so every convolution computes a quarter as many outputs. The image
+            # still goes in at 64 by 64, and a 3 by 3 kernel at stride 2 reads
+            # every input pixel.
             blocks += [
                 nn.Conv2d(
                     channels, out, kernel_size=3, stride=2 if depth == 0 else 1,

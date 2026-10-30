@@ -18,9 +18,9 @@ reports what that costs.
 Over 20 seeds, 20 percent held out.
 <!-- /lesion-split:leakage -->
 
-Published audits of this dataset report the correction costing several points.
-On this model, at this resolution, it costs about one and a half points of
-accuracy, and on both class-balanced metrics the interval crosses zero.
+On this model, at this resolution, the correction costs about one and a
+half points of accuracy, and on both class-balanced metrics the interval
+crosses zero.
 
 <!-- lesion-split:gap -->
 | metric | image split minus lesion split | 95% interval | seeds above zero |
@@ -59,7 +59,7 @@ The corpus ships a `lesion_id` column, and it is not decorative.
 | images | 10,015 |
 | distinct lesions | 7,470 |
 | lesions photographed more than once | 1,956 (26.2%) |
-| images that are a repeat of one already present | 4,501 (44.9%) |
+| images of lesions photographed more than once | 4,501 (44.9%) |
 | most photographs of one lesion | 6 |
 | largest class | nv, 66.9% |
 <!-- /lesion-split:corpus -->
@@ -104,11 +104,11 @@ notebooks on this dataset.
 </details>
 
 <details>
-<summary><b>Why the effect is smaller than the literature reports</b></summary>
+<summary><b>Why the effect might be this small</b></summary>
 
-Published audits of this dataset put the correction at several points. This
-measures 1.54 on accuracy and cannot separate the class-balanced metrics from
-zero. Three explanations, none of which this evidence distinguishes between:
+This measures 1.54 on accuracy and cannot separate the class-balanced metrics
+from zero. Three explanations, none of which this evidence distinguishes
+between:
 
 The model may be too small to memorise individual lesions. 390,695 parameters at
 64 by 64 has limited capacity to store a specific image, and leakage only pays
@@ -124,8 +124,9 @@ Ten epochs may not be enough to overfit hard enough for it to matter.
 
 All three predict the same thing: the gap should grow with capacity, resolution
 and training time. That is a straightforward experiment and this repository does
-not run it, because each arm at 224 pixels is hours on a CPU rather than
-90 seconds.
+not run it. A run here averages 85 seconds at 64 pixels. At 224 every image has
+twelve times the pixels, so if time scales with them the eight-seed comparison,
+sixteen runs, takes hours on a CPU, before the network grows at all.
 
 What the result does establish is narrower and still worth having. The leakage
 is real, it is large, it is trivially reproducible from a 690 KB file, and its
@@ -157,8 +158,10 @@ macOS-26.6.2-arm64-arm-64bit
 ```
 <!-- /lesion-split:runtime -->
 
-The default run is three seeds and finishes inside ten minutes. The table above
-is eight seeds, which takes about twenty five.
+The block above records the eight-seed experiment that every score in this
+README comes from, and `uv run lesion-split train --seeds 8` reruns it. The
+default is three seeds, six runs, which at the recorded pace finishes inside ten
+minutes. Either one overwrites `results/experiment.json`.
 
 </details>
 
@@ -179,12 +182,16 @@ dermatoscopic images have no canonical orientation, but hue carries diagnostic
 information, so colour jitter would be teaching the model something untrue.
 
 `src/lesionsplit/model.py` is four convolutional blocks and nothing clever. The
-first block strides, which took one training step from 456 ms to 155 ms and the
-experiment from 34 minutes to 12.
+first block strides, which halves the side of every feature map from that
+convolution on, so every convolution computes a quarter as many outputs as it
+would without the stride. It is there to keep CPU training short.
 
-`src/lesionsplit/tables.py` renders every figure in this file from the committed
-artifacts. A marker with no generator and a generator with no marker are both
-errors, in both directions.
+`src/lesionsplit/tables.py` renders every table in this file, and the timing
+summary under "Running it", from the committed artifacts. The one exception is
+the batch size, which no artifact records. A marker with no generator and a
+generator with no marker are both errors, and `tests/test_readme.py` fails if
+the committed README is not what the artifacts render. The numbers in the prose
+are typed, and that file checks some of them, one test per figure.
 
 </details>
 
