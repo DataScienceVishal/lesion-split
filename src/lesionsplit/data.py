@@ -6,11 +6,10 @@ at the working resolution and keeps it in memory. At 64 by 64 that array is
 10,015 x 64 x 64 x 3 bytes, about 123 MB, which fits comfortably and turns each
 epoch into arithmetic rather than JPEG decoding.
 
-The resolution is the honest compromise in this project. Dermatologists read
-these at full size and 64 pixels discards detail that matters clinically. It is
-chosen so the experiment finishes on a CPU in minutes, and the accuracies below
-should be read as "what this architecture gets at this resolution", not as what
-the task allows.
+Dermatologists read these at full size, and 64 pixels discards detail that
+matters clinically. The resolution is chosen so the experiment finishes on a CPU
+in minutes, and the accuracies in the README should be read as "what this
+architecture gets at this resolution", not as what the task allows.
 """
 
 from __future__ import annotations

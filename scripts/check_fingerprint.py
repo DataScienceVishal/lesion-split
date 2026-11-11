@@ -252,6 +252,24 @@ def walk(root: Path) -> list[Path]:
     ]
 
 
+def working_tree(start: Path) -> Path:
+    """The repository's top level, so the check covers the whole repo wherever it runs.
+
+    Rooted at `Path.cwd()` instead, a run from `tests/` read the six test
+    modules, printed "clean across 6 file(s)" and exited 0. The README and all
+    eight modules in `src/lesionsplit` were among the 15 files it never opened.
+    `scripts/pre-commit` was never affected, since it moves to the top level
+    before calling this script. When git finds no repository, `start` comes
+    back unchanged.
+    """
+    top = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"], cwd=start, capture_output=True, text=True
+    )
+    if top.returncode != 0:
+        return start
+    return Path(top.stdout.strip())
+
+
 def interesting(path: Path) -> bool:
     if path.name in SKIP_NAMES:
         return False
@@ -266,7 +284,7 @@ def main() -> int:
     parser.add_argument("--banned", type=Path, help="path to BANNED.md, otherwise discovered")
     args = parser.parse_args()
 
-    root = Path.cwd()
+    root = working_tree(Path.cwd())
     rules = parse_banned(args.banned or find_banned_md(root))
 
     if args.staged:

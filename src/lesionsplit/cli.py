@@ -1,13 +1,19 @@
 """`lesion-split` on the command line.
 
-Three commands. `leakage` needs the 690 KB metadata file and answers the question
-this project is about. `train` needs the 2.8 GB of images and produces the
-accuracy numbers. `report` reads what `train` wrote and renders the tables.
+Four commands. `leakage` needs the 690 KB metadata file and answers the question
+this project is about. `fetch` downloads the 2.8 GB of images, and `train` needs
+them and produces the accuracy numbers. `report` prints the scores `train` wrote,
+or with `--format md` rewrites the README's tables and timing block from those
+and from what `leakage` wrote.
 
 Exit codes: 0 for a clean run, 1 for a download that does not match its recorded
 digest, 2 for a command that needed data it could not find. A missing corpus and
 a corrupt one are different problems for whoever is reading the output, so they
-do not share a code.
+do not share a code. `report --format md` also exits 1 when the README's marker
+comments are unbalanced or nested, or do not match the generators, and with
+`--check` when the README is not what the artifacts render. A usage error exits 2 from
+`argparse`, and anything uncaught, such as a network error, exits 1 with a
+traceback.
 """
 
 from __future__ import annotations

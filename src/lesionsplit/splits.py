@@ -1,10 +1,11 @@
 """The two ways to divide HAM10000, and the measurement that separates them.
 
 HAM10000 photographs some lesions more than once. 10,015 images cover 7,470
-distinct lesions, so 2,545 images are a second, third or sixth look at something
-already in the set. Splitting on the image column puts those repeats on both
-sides of the divide and the model is scored partly on pictures of lesions it
-trained on.
+distinct lesions, so 2,545 images are a second to sixth look at something
+already in the set. Splitting on the image column treats every photograph as
+independent, so any photograph of a repeated lesion, the first look included,
+can land in test while another photograph of that lesion is in train. The model
+is then scored partly on pictures of lesions it trained on.
 
 Splitting on `lesion_id` instead keeps every photograph of one lesion on one
 side. That is the only difference between the two functions below, and the gap
@@ -47,11 +48,11 @@ class Split:
 
 
 def by_image(frame: pd.DataFrame, seed: int, test_fraction: float = TEST_FRACTION) -> Split:
-    """Shuffle the rows and cut. What almost every published notebook does.
+    """Shuffle the rows and cut.
 
     Nothing here is wrong as code. It is wrong as an experiment, and only
     because of a property of this particular corpus that the file itself
-    announces in its second column.
+    announces in its `lesion_id` column.
     """
     order = np.random.default_rng(seed).permutation(len(frame))
     cut = int(round(len(frame) * (1 - test_fraction)))

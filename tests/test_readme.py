@@ -91,6 +91,20 @@ def test_the_leakage_percentage_in_prose_matches_the_measurement():
     assert str(round(measured)) in prose(), f"prose does not quote {measured:.1f}% rounded"
 
 
+def test_the_training_set_range_in_prose_is_the_one_the_trained_seeds_span():
+    experiment, _ = artifacts()
+    runs = experiment["runs"]
+    gaps = []
+    for seed in sorted({r["seed"] for r in runs}):
+        arm = {r["split"]: r["train_images"] for r in runs if r["seed"] == seed}
+        gaps.append(arm["by_image"] - arm["by_lesion"])
+    larger, smaller = -min(gaps), max(gaps)
+
+    assert says(f"from {larger} images larger than the image split's to {smaller} smaller"), (
+        f"prose does not give the lesion split's range, {larger} larger to {smaller} smaller"
+    )
+
+
 def test_the_majority_floor_in_prose_matches_the_baseline():
     experiment, _ = artifacts()
     floor = np.mean([r["baselines"]["majority_class"]["accuracy"] for r in experiment["runs"]])
@@ -120,27 +134,23 @@ def test_the_default_three_seeds_fit_in_the_ten_minutes_the_prose_gives_them():
 def test_the_readme_does_not_claim_a_metric_excludes_zero_when_it_does_not():
     """The one claim that would be dishonest rather than merely stale.
 
-    Two of the three metrics have intervals crossing zero. If a rerun moved them
-    and the prose still said so, or stopped saying so when it should, the README
-    would be overstating what the experiment shows.
+    The prose says both class-balanced intervals cross zero. A rerun that changed
+    which intervals cross, or an edit that dropped the sentence, would leave the
+    README misreporting the experiment. So both are pinned: the metrics the gap
+    table marks, and the sentence that names them.
     """
-    experiment, _ = artifacts()
-    runs = experiment["runs"]
-    crossing = []
-    for metric in ("balanced_accuracy", "macro_f1"):
-        gaps = []
-        for seed in sorted({r["seed"] for r in runs}):
-            arm = {r["split"]: r["scores"][metric] for r in runs if r["seed"] == seed}
-            gaps.append(arm["by_image"] - arm["by_lesion"])
-        gaps = np.array(gaps) * 100
-        half = 2.365 * gaps.std(ddof=1) / np.sqrt(len(gaps))
-        if gaps.mean() - half < 0 < gaps.mean() + half:
-            crossing.append(metric)
+    from lesionsplit import tables
 
-    if crossing:
-        assert says("crosses zero") or says("cannot separate") or says("nothing this"), (
-            f"{crossing} cross zero and the prose does not say so"
-        )
+    crossing = [
+        row.split("|")[1].strip()
+        for row in tables.gap_table(*artifacts())
+        if "crosses zero" in row
+    ]
+
+    assert crossing == ["balanced accuracy", "macro F1"], (
+        f"the prose names the class-balanced pair, the gap table marks {crossing}"
+    )
+    assert says("on both class-balanced metrics the interval crosses zero")
 
 
 def test_no_generated_figure_is_also_typed_into_the_prose():

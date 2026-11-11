@@ -1,17 +1,18 @@
 """README tables, rendered from the committed artifacts.
 
 Every table in the README, and the runtime block, lives between a pair of HTML
-comments and is written by one of the generators below. `report --check`
-re-renders and compares, and `tests/test_readme.py` makes the same comparison on
-every CI run, so a number in one of those blocks that has been edited by hand,
-or one that has drifted because the experiment was rerun and the README was not,
-fails rather than sits there. The batch size in the runtime block is typed by the
-generator, because no artifact records it, so a rerun at another batch size
-would not show.
+comments and is written by one of the generators below.
+`report --format md --check` re-renders and compares, and `tests/test_readme.py`
+makes the same comparison on every CI run, so a number in one of those blocks
+that has been edited by hand, or one that has drifted because the experiment was
+rerun and the README was not, fails rather than sits there. The batch size in the
+runtime block is typed by the generator, because no artifact records it, so a
+rerun at another batch size would not show.
 
-A marker with no generator and a generator with no marker are both errors. That
-matters more than it sounds: checking only one direction lets a block quietly
-freeze at whatever it last said while everything still reports clean.
+A marker with no generator and a generator with no marker are both errors. A
+check that only looks up each generator's marker never sees a block whose
+generator was deleted, so that block keeps whatever it last said while
+everything still reports clean.
 """
 
 from __future__ import annotations
@@ -76,7 +77,10 @@ def leakage_table(experiment: dict, leakage: dict) -> list[str]:
             f"{100 * part['max_leaked_fraction']:.1f}) |"
         )
     held_out = leakage["by_split"]["by_image"]["mean_test_images"] / leakage["images"]
-    rows.append(f"\nOver {leakage['seeds']} seeds, {100 * held_out:.0f} percent held out.")
+    rows.append(
+        f"\nMeans over {leakage['seeds']} seeds, with the range across them in brackets, "
+        f"{100 * held_out:.0f} percent held out."
+    )
     return rows
 
 

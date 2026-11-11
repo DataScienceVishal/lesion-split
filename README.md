@@ -15,7 +15,7 @@ reports what that costs.
 | `by_image` | 8,012 | 2,003 | 38.3% (36.5 to 40.0) |
 | `by_lesion` | 8,011 | 2,004 | 0.0% (0.0 to 0.0) |
 
-Over 20 seeds, 20 percent held out.
+Means over 20 seeds, with the range across them in brackets, 20 percent held out.
 <!-- /lesion-split:leakage -->
 
 On this model, at this resolution, the correction costs about one and a
@@ -37,9 +37,7 @@ percent of the test set on the wrong side of the divide buys a point and a half
 of accuracy, and on the two metrics that account for class imbalance it buys
 nothing this experiment can distinguish from noise.
 
-The leakage is real and easy to show. What it is worth to a model is a separate
-question, and the honest answer here is "less than you would think, for this
-model".
+The leakage is real and easy to show.
 
 ```bash
 git clone https://github.com/DataScienceVishal/lesion-split && cd lesion-split
@@ -69,9 +67,11 @@ a fifth, and every one of those images has five chances to have a near-duplicate
 sitting in the training set. Grouping by `lesion_id` before splitting keeps all
 six on one side.
 
-The two arms land within a handful of images of the same train and test sizes,
-which is what makes the comparison fair. If one arm had a materially smaller
-training set, any difference between them could be about that instead.
+The two arms train on almost the same number of images, which a fair comparison
+needs. Holding out a fifth of the lesions does not hold out a fifth of the
+images, so the lesion split's training set moves with the seed. Across the eight
+seeds trained it ran from 6 images larger than the image split's to 43 smaller,
+about half a percent at the worst.
 
 </details>
 
@@ -94,12 +94,8 @@ would be worse. Two thirds of this corpus is one class, so answering `nv` every
 time scores about 0.67, and the network scores below that. It is not that the
 network is worse than a constant: the loss is weighted by inverse class
 frequency, which deliberately trades majority accuracy for the rare classes.
-Balanced accuracy is the column to read, and against a chance floor near 0.14 it
-is doing real work.
-
-A model reporting 0.67 accuracy on HAM10000 without a majority-class baseline
-next to it has told you nothing at all, and that number appears in a great many
-notebooks on this dataset.
+Balanced accuracy is the column to read, and at about 0.6 it is four times a
+chance floor near 0.14.
 
 </details>
 
@@ -113,8 +109,7 @@ between:
 The model may be too small to memorise individual lesions. 390,695 parameters at
 64 by 64 has limited capacity to store a specific image, and leakage only pays
 if the network can recognise the duplicate. A fine-tuned ImageNet backbone at
-224 pixels, which is what most published work uses, has far more room to do
-exactly that.
+224 pixels has far more room to do exactly that.
 
 The resolution may be destroying the cue. Two photographs of one lesion differ
 in framing and lighting; at 64 pixels much of what makes them recognisably the
@@ -122,16 +117,17 @@ same object is gone.
 
 Ten epochs may not be enough to overfit hard enough for it to matter.
 
-All three predict the same thing: the gap should grow with capacity, resolution
-and training time. That is a straightforward experiment and this repository does
-not run it. A run here averages 85 seconds at 64 pixels. At 224 every image has
-twelve times the pixels, so if time scales with them the eight-seed comparison,
-sixteen runs, takes hours on a CPU, before the network grows at all.
+Each one predicts the gap grows along its own axis: with a larger network at 64
+pixels, with this network at 224, or with more epochs. Changing one at a time
+would test each, though if 64 pixels destroys the cue, the two tests that stay
+at 64 pixels will find nothing either way. This repository runs none of them.
 
-What the result does establish is narrower and still worth having. The leakage
-is real, it is large, it is trivially reproducible from a 690 KB file, and its
-effect on a model is an empirical question rather than something to assume in
-either direction.
+The resolution test is the expensive one. A run here averages 85 seconds at 64
+pixels. At 224 every image has twelve times the pixels, so if time scales with
+them the eight-seed comparison, sixteen runs, takes hours on a CPU. Twice the
+epochs roughly doubles a run, and the same network at twice the width does
+about four times the arithmetic, roughly an hour and a half for the eight-seed
+comparison.
 
 </details>
 
@@ -146,8 +142,15 @@ uv run lesion-split report     # render what train wrote
 ```
 
 Exit codes: 0 clean, 1 a download that does not match its recorded digest, 2 a
-command that needed data it could not find. A missing corpus and a corrupt one
-are different problems and do not share a code.
+command that needed data it could not find, or a usage error. A missing corpus
+and a corrupt one are different problems and do not share a code. Anything
+uncaught, a network error for instance, ends in a traceback and exit 1.
+
+`report --format md` rewrites the tables in this file, and the timing summary
+below, which sit between pairs of HTML comments that GitHub does not display. It
+exits 1 if those comments are unbalanced or nested, or do not match the
+generators in `tables.py` one for one. With `--check` it writes nothing, and
+exits 1 if the file is not what the artifacts render.
 
 <!-- lesion-split:runtime -->
 ```
@@ -186,11 +189,16 @@ first block strides, which halves the side of every feature map from that
 convolution on, so every convolution computes a quarter as many outputs as it
 would without the stride. It is there to keep CPU training short.
 
+`src/lesionsplit/train.py` counts the class weights from the training labels
+alone, so no test label reaches the loss. Each run also scores two baselines
+that never look at the image, on the same test set.
+
 `src/lesionsplit/tables.py` renders every table in this file, and the timing
 summary under "Running it", from the committed artifacts. The one exception is
-the batch size, which no artifact records. A marker with no generator and a
-generator with no marker are both errors, and `tests/test_readme.py` fails if
-the committed README is not what the artifacts render. The numbers in the prose
+the batch size, which no artifact records. A marker pair (the two HTML comments
+around each table) with no generator, and a generator with no marker pair, are
+both errors, and `tests/test_readme.py` fails if the committed README is not
+what the artifacts render. The numbers in the prose
 are typed, and that file checks some of them, one test per figure.
 
 </details>
@@ -231,13 +239,15 @@ under whatever terms they accepted.
 The code in this repository is MIT licensed and the dataset is not. [NOTICE.md](NOTICE.md)
 says which licence covers what.
 
-Kaggle hosts this dataset in at least a dozen forms: balanced, augmented, hair
-removed, resized to 28 by 28. Training on a pre-augmented copy leaks by
+Kaggle hosts this dataset in many forms: balanced, augmented, hair removed,
+resized to 28 by 28. Training on a pre-augmented copy leaks by
 construction, because derived images of one original sit on both sides of any
-split no matter how careful the code downstream is. `Copycats: the many lives of
-a publicly available medical imaging dataset` (arXiv:2402.06353) is about this
-dataset specifically. The Kaggle page is a reasonable way to find the data and a
-poor way to take it.
+split no matter how careful the code downstream is. Jiménez-Sánchez et al.,
+`Copycats: the many lives of a publicly available medical imaging dataset`
+(NeurIPS 2024 Datasets and Benchmarks, arXiv:2402.06353), survey datasets
+re-hosted on Kaggle and HuggingFace, and counted 141 copies of this one on
+Kaggle in October 2024. The Kaggle page is a reasonable way to find the data and
+a poor way to take it.
 
 </details>
 

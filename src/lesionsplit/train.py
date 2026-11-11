@@ -1,13 +1,13 @@
 """Training one model, and the experiment that trains several.
 
 Everything is held fixed across arms except the split. Same architecture, same
-seed, same epochs, same batch size, same optimiser, same augmentation, same class
-weights recomputed from whichever training set the arm produced. If two runs
-differ, the split is the reason, because nothing else was allowed to vary.
+seed, same epochs, same batch size, same optimiser, same augmentation, and class
+weights computed the same way from whichever training set the arm produced. If
+two runs differ, the split is the reason, because nothing else was allowed to
+vary.
 
-Runs on CPU by design. This is not a claim that CPU is the right way to train
-vision models; it is that a result nobody can rerun is a weaker result, and the
-whole experiment finishes here in about the time it takes to read the README.
+It runs on CPU by design, so anyone with a laptop can rerun it. The default
+three seeds finish here inside ten minutes.
 """
 
 from __future__ import annotations

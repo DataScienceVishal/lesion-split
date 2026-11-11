@@ -267,3 +267,39 @@ def test_an_unreadable_file_is_a_finding_and_not_a_silent_pass(tmp_path, rules):
 def test_a_readable_file_is_still_judged_on_its_words(tmp_path, rules):
     """Guards the test above from passing because everything became a finding."""
     assert scan(tmp_path, "fine.md", "Parses 4.2M rows in 11s.\n", rules) == []
+
+
+def test_the_root_is_the_repo_top_not_the_directory_it_was_run_from(tmp_path):
+    repo = tmp_path / "somewhere"
+    (repo / "tests").mkdir(parents=True)
+    _repo(repo)
+
+    assert fp.working_tree(repo / "tests") == repo.resolve()
+
+
+def test_a_run_from_a_subdirectory_fails_on_a_file_above_it(tmp_path, monkeypatch, capsys):
+    """The other two `working_tree` tests pass with it unwired.
+
+    They hold only that the function returns the right path. This one calls
+    `main` from a subdirectory of a repo whose single offence sits at the root,
+    which is the arrangement that exited 0 before the fix.
+    """
+    repo = tmp_path / "somewhere"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / "scripts" / "style-words.md").write_text(
+        "```banned-words\nrobust\n```\n", encoding="utf-8"
+    )
+    (repo / "README.md").write_text("A robust design.\n", encoding="utf-8")
+    _repo(repo)
+
+    monkeypatch.chdir(repo / "tests")
+    monkeypatch.setattr(sys, "argv", ["check_fingerprint.py"])
+
+    assert fp.main() == 1
+    assert capsys.readouterr().err.splitlines()[0] == "README.md:1: banned word 'robust'"
+
+
+def test_outside_a_repo_the_scan_starts_where_it_was_asked_to(tmp_path):
+    """`git rev-parse` fails here, and a loose directory is still worth checking."""
+    assert fp.working_tree(tmp_path) == tmp_path

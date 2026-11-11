@@ -14,8 +14,10 @@ import torch
 from lesionsplit import model as models
 from lesionsplit.data import CLASSES, class_weights
 
-# The real proportions, rounded. Using a balanced fixture would make every test
-# below pass for the wrong reason, since the whole point is what imbalance does.
+# The real proportions to three places, except vasc, which rounds to 0.014 and is
+# 0.015 here because numpy rejects shares that sum to 0.999. Using a balanced
+# fixture would make every test below pass for the wrong reason, since the whole
+# point is what imbalance does.
 SHARES = (0.033, 0.051, 0.110, 0.011, 0.111, 0.669, 0.015)
 
 
@@ -49,9 +51,10 @@ def test_majority_class_scores_the_majority_share():
 def test_majority_class_has_terrible_balanced_accuracy():
     """The reason accuracy alone is not reported anywhere in this project.
 
-    A constant predictor scores about two thirds on accuracy and one seventh of
-    one class on balanced accuracy. A reader shown only the first number cannot
-    tell that the model never emits six of the seven classes.
+    A constant predictor scores about two thirds on accuracy and one seventh on
+    balanced accuracy, which is the mean of full recall on the one class it always
+    answers and zero recall on the other six. A reader shown only the first number
+    cannot tell that the model never emits six of the seven classes.
     """
     got = models.majority_class(labels(4000, 0), labels(1000, 1))
     assert got["accuracy"] > 0.6

@@ -1,7 +1,7 @@
 """The split functions, against a corpus small enough to check by hand.
 
 No image is read here and none needs to be. Everything this project claims about
-leakage is a property of one column in an 830 KB metadata file, which is why the
+leakage is a property of one column in a 690 KB metadata file, which is why the
 claim can be checked before a 2.8 GB download and why these tests run offline.
 """
 

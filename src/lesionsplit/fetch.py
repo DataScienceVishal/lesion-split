@@ -1,11 +1,12 @@
 """Getting HAM10000, from the archive the authors published rather than a copy.
 
-The dataset is on Kaggle in at least a dozen forms: balanced, augmented, hair
-removed, resized to 28 by 28. Several of those are worse than useless here.
+The dataset is on Kaggle in many forms: balanced, augmented, hair removed,
+resized to 28 by 28. Several of those are worse than useless here.
 An augmented copy has multiple derived images per original, so a random split
 over it leaks by construction and no amount of care downstream undoes that.
 `Copycats: the many lives of a publicly available medical imaging dataset`
-(arXiv:2402.06353) is about this dataset specifically.
+(arXiv:2402.06353) surveys re-hosted datasets, this one among them, and counts
+its Kaggle copies.
 
 So this reads Harvard Dataverse, version 4.0, file identities and MD5 digests
 pinned below. It is the copy the data descriptor points at, it needs no account,
@@ -111,7 +112,7 @@ def download(item: Archived, into: Path = CACHE) -> Path:
 
 
 def metadata(into: Path = CACHE) -> pd.DataFrame:
-    """The 830 KB file that carries the whole argument.
+    """The 690 KB file that carries the whole argument.
 
     This reads the original upload rather than Dataverse's ingested `.tab`, and
     the reason is the digest rather than the contents. Both parse to the same
